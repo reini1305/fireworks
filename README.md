@@ -1,4 +1,4 @@
-Crazy Eyes
+Fireworks
 ==============
 
 This is the source repository for the Pebble Watchface "Fireworks"
