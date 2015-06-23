@@ -1,0 +1,25 @@
+{
+  "uuid": "18e6b7be-aa5e-4495-afa7-b8ba2ce533c9",
+  "shortName": "fireworks",
+  "longName": "Fireworks",
+  "companyName": "Christian Reinbacher",
+  "versionLabel": "1.0",
+  "versionCode": 1,
+  "sdkVersion": "3",
+  "targetPlatforms": ["aplite", "basalt"],
+  "watchapp": {
+    "watchface": true
+  },
+  "appKeys": {
+    "dummy": 0
+  },
+  "resources": {
+    "media": [
+              {
+              "characterRegex": "[0-9:]",
+              "type": "font",
+              "name": "FONT_DIGITAL_62",
+              "file": "fonts/Quirkus.ttf"
+              }]
+  }
+}
