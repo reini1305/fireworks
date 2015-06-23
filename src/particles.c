@@ -118,15 +118,10 @@ static void background_update_proc(Layer *layer, GContext *ctx) {
     particles[i].Pos.x += particles[i].Vel.x;
     particles[i].Pos.y += particles[i].Vel.y;
     // insert into history
-    int curr_index = min(particles[i].age,NUM_HISTORY-1);
-    if(curr_index==0)
-      particles[i].PosHistory[0]=particles[i].Pos;
-    else {
-      memmove(&particles[i].PosHistory[0],&particles[i].PosHistory[1],sizeof(GPoint)*(NUM_HISTORY-1));
-      particles[i].PosHistory[curr_index]=particles[i].Pos;
-    }
+    memmove(&particles[i].PosHistory[1],&particles[i].PosHistory[0],sizeof(GPoint)*(NUM_HISTORY-1));
+    particles[i].PosHistory[0]=particles[i].Pos;
     for(int j=0;j<NUM_HISTORY-1;j++)
-      if(particles[i].PosHistory[j+1].x>0 && particles[i].PosHistory[j].x>0)
+      if(particles[i].PosHistory[j+1].x>0)
         graphics_draw_line(ctx,particles[i].PosHistory[j],particles[i].PosHistory[j+1]);
       else
         break;
