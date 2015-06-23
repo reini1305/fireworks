@@ -6,6 +6,7 @@ static AppTimer *animation_timer;
 static TextLayer *time_layer;
 bool animation_is_running;
 static GPoint center;
+bool bluetooth_connected;
 
 #define NUM_PARTICLES 150
 #define NUM_HISTORY 10
@@ -49,6 +50,15 @@ static void animate(void *data){
   layer_mark_dirty(background_layer);
 }
 
+static void start_animation() {
+  if(animation_is_running)
+    return;
+  anim_count=0;
+  initParticles();
+  animation_is_running=true;
+  animate(NULL);
+}
+
 static void handle_tick(struct tm *tick_time, TimeUnits units_changed) {
   static char time_text[] = "00:00";
   
@@ -69,28 +79,21 @@ static void handle_tick(struct tm *tick_time, TimeUnits units_changed) {
   }
   
   text_layer_set_text(time_layer, time_text);
-  if(animation_is_running)
-    return;
-  anim_count=0;
-  initParticles();
-  animation_is_running=true;
-  animate(NULL);
+  start_animation();
 }
 
 static void accel_tap_handler(AccelAxisType axis, int32_t direction) {
   // Process tap on ACCEL_AXIS_X, ACCEL_AXIS_Y or ACCEL_AXIS_Z
   // Direction is 1 or -1
   // blink if enabled
-  if(animation_is_running)
-    return;
-  anim_count=0;
-  initParticles();
-  animation_is_running=true;
-  animate(NULL);
+  start_animation();
 }
 
-static int min(int val1, int val2) {
-  return val1<val2?val1:val2;
+static void bluetooth_handler(bool connected) {
+  bluetooth_connected = connected;
+  start_animation();
+  if(!connected)
+    vibes_double_pulse();
 }
 
 static void background_update_proc(Layer *layer, GContext *ctx) {
@@ -99,16 +102,31 @@ static void background_update_proc(Layer *layer, GContext *ctx) {
   graphics_fill_rect(ctx,bounds,0,GCornerNone);
   graphics_context_set_stroke_color(ctx,GColorWhite);
 #ifdef PBL_COLOR
-  if(anim_count<10)
-  graphics_context_set_stroke_color(ctx,GColorRed);
-  else if(anim_count<30)
-  graphics_context_set_stroke_color(ctx,GColorOrange);
-  else if(anim_count<60)
-  graphics_context_set_stroke_color(ctx,GColorRajah);
-  else if(anim_count<70)
-  graphics_context_set_stroke_color(ctx,GColorChromeYellow);
-  else if(anim_count<90)
-  graphics_context_set_stroke_color(ctx,GColorYellow);
+  graphics_context_set_antialiased(ctx, false); // more performance
+  if (bluetooth_connected) {
+    if(anim_count<10)
+    graphics_context_set_stroke_color(ctx,GColorRed);
+    else if(anim_count<30)
+    graphics_context_set_stroke_color(ctx,GColorOrange);
+    else if(anim_count<60)
+    graphics_context_set_stroke_color(ctx,GColorRajah);
+    else if(anim_count<70)
+    graphics_context_set_stroke_color(ctx,GColorChromeYellow);
+    else if(anim_count<90)
+    graphics_context_set_stroke_color(ctx,GColorYellow);
+  }
+  else {
+    if(anim_count<10)
+    graphics_context_set_stroke_color(ctx,GColorBlue);
+    else if(anim_count<30)
+    graphics_context_set_stroke_color(ctx,GColorBlueMoon);
+    else if(anim_count<60)
+    graphics_context_set_stroke_color(ctx,GColorCobaltBlue);
+    else if(anim_count<70)
+    graphics_context_set_stroke_color(ctx,GColorVividCerulean);
+    else if(anim_count<90)
+    graphics_context_set_stroke_color(ctx,GColorPictonBlue);
+  }
 #endif
   
   for(int i=0;i<NUM_PARTICLES;i++) {
@@ -162,7 +180,8 @@ static void window_load(Window *window) {
   tick_timer_service_subscribe(MINUTE_UNIT, handle_tick);
   
   accel_tap_service_subscribe(accel_tap_handler);
-  
+  bluetooth_connection_service_subscribe(bluetooth_handler);
+  bluetooth_handler(bluetooth_connection_service_peek());
 }
 
 static void window_unload(Window *window) {
