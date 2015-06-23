@@ -89,6 +89,10 @@ static void accel_tap_handler(AccelAxisType axis, int32_t direction) {
   animate(NULL);
 }
 
+static int min(int val1, int val2) {
+  return val1<val2?val1:val2;
+}
+
 static void background_update_proc(Layer *layer, GContext *ctx) {
   GRect bounds = layer_get_bounds(layer);
   graphics_context_set_fill_color(ctx,GColorBlack);
@@ -106,16 +110,26 @@ static void background_update_proc(Layer *layer, GContext *ctx) {
   else if(anim_count<90)
   graphics_context_set_stroke_color(ctx,GColorYellow);
 #endif
+  
   for(int i=0;i<NUM_PARTICLES;i++) {
     if(particles[i].age<0)
       continue;
     particles[i].Vel.y += 1;
     particles[i].Pos.x += particles[i].Vel.x;
     particles[i].Pos.y += particles[i].Vel.y;
-    particles[i].PosHistory[particles[i].age%NUM_HISTORY]=particles[i].Pos; // round robin
+    // insert into history
+    int curr_index = min(particles[i].age,NUM_HISTORY-1);
+    if(curr_index==0)
+      particles[i].PosHistory[0]=particles[i].Pos;
+    else {
+      memmove(&particles[i].PosHistory[0],&particles[i].PosHistory[1],sizeof(GPoint)*(NUM_HISTORY-1));
+      particles[i].PosHistory[curr_index]=particles[i].Pos;
+    }
     for(int j=0;j<NUM_HISTORY-1;j++)
-      if(particles[i].PosHistory[j+1].x>0)
+      if(particles[i].PosHistory[j+1].x>0 && particles[i].PosHistory[j].x>0)
         graphics_draw_line(ctx,particles[i].PosHistory[j],particles[i].PosHistory[j+1]);
+      else
+        break;
     particles[i].age++;
     //if(particles[i].Pos.y>168 || particles[i].Pos.y<0) particles[i].Vel.y*=-1;
     //if(particles[i].Pos.x>144 || particles[i].Pos.x<0) particles[i].Vel.x*=-1;
