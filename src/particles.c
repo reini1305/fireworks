@@ -99,6 +99,7 @@ static void accel_tap_handler(AccelAxisType axis, int32_t direction) {
   // Process tap on ACCEL_AXIS_X, ACCEL_AXIS_Y or ACCEL_AXIS_Z
   // Direction is 1 or -1
   // blink if enabled
+  max_anim_count = MAX_ANIM_COUNT;
   start_animation();
 }
 
