@@ -1,9 +1,10 @@
 {
     "appKeys": {
-        "dummy": 0
+        "minute": 0,
+        "bluetooth": 1
     },
     "capabilities": [
-        ""
+        "configurable"
     ],
     "companyName": "Christian Reinbacher",
     "longName": "Fireworks",
@@ -18,6 +19,31 @@
             }
         ]
     },
+  "preferences": {
+    "embedded": true,
+    "debug": false,
+    "url": "http://musikkapelle-hollenegg.at/images/autoconfig.html",
+    "description": "If you like what I'm doing, consider a donation: <br><a href='https://pledgie.com/campaigns/28156'><img alt='Click here to lend your support to: Christian Reinbachers Pebble Apps and make a donation at pledgie.com !' src='https://pledgie.com/campaigns/28156.png?skin_name=chrome' border='0' ></a>",
+    "items": [
+              {
+              "name": "bluetooth",
+              "title": "Vibrate on bluetooth disconnect?",
+              "type": "boolean",
+              "off-text": "No",
+              "on-text": "Yes",
+              "default": true
+              },
+              {
+              "name": "minute",
+              "title": "Show firework every minute?",
+              "type": "boolean",
+              "off-text": "No",
+              "on-text": "Yes",
+              "default": true
+              }
+              ]
+  },
+
     "sdkVersion": "3",
     "shortName": "fireworks",
     "targetPlatforms": [
@@ -25,7 +51,7 @@
         "basalt"
     ],
     "uuid": "18e6b7be-aa5e-4495-afa7-b8ba2ce533c9",
-    "versionLabel": "1.3",
+    "versionLabel": "1.4",
     "watchapp": {
         "watchface": true
     }

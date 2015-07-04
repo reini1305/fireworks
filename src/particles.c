@@ -1,4 +1,5 @@
 #include <pebble.h>
+#include "autoconfig.h"
 
 static Layer *background_layer;
 static Window *window;
@@ -10,7 +11,8 @@ bool bluetooth_connected;
 
 #define NUM_PARTICLES 150
 #define NUM_HISTORY 10
-#define MAX_ANIM_COUNT 100
+#define MAX_ANIM_COUNT 150
+static int max_anim_count;
 
 typedef struct Particle {
   GPoint Pos; //Position of the particle
@@ -43,10 +45,14 @@ static void initParticles() {
 }
 
 static void animate(void *data){
-  if(++anim_count<MAX_ANIM_COUNT)
+  if(++anim_count<max_anim_count)
     animation_timer = app_timer_register(33,animate,NULL);
   else
+  {
     animation_is_running=false;
+    if(!getMinute())
+      max_anim_count=0;
+  }
   layer_mark_dirty(background_layer);
 }
 
@@ -57,6 +63,13 @@ static void start_animation() {
   initParticles();
   animation_is_running=true;
   animate(NULL);
+}
+
+static void in_received_handler(DictionaryIterator *iter, void *context) {
+  autoconfig_in_received_handler(iter, context);
+  if(!animation_is_running)
+    max_anim_count = getMinute()?MAX_ANIM_COUNT:0;
+  layer_mark_dirty(background_layer);
 }
 
 static void handle_tick(struct tm *tick_time, TimeUnits units_changed) {
@@ -92,7 +105,7 @@ static void accel_tap_handler(AccelAxisType axis, int32_t direction) {
 static void bluetooth_handler(bool connected) {
   bluetooth_connected = connected;
   start_animation();
-  if(!connected)
+  if(!connected && getBluetooth())
     vibes_double_pulse();
 }
 
@@ -190,6 +203,10 @@ static void window_unload(Window *window) {
 }
 
 static void init(void) {
+  autoconfig_init();
+  app_message_register_inbox_received(in_received_handler);
+
+  max_anim_count = MAX_ANIM_COUNT;
   window = window_create();
   window_set_window_handlers(window, (WindowHandlers) {
     .load = window_load,
@@ -205,6 +222,7 @@ static void init(void) {
 
 static void deinit(void) {
   window_destroy(window);
+  autoconfig_deinit();
 }
 
 
