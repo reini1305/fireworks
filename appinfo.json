@@ -48,7 +48,8 @@
     "shortName": "fireworks",
     "targetPlatforms": [
         "aplite",
-        "basalt"
+        "basalt",
+	"chalk"
     ],
     "uuid": "18e6b7be-aa5e-4495-afa7-b8ba2ce533c9",
     "versionLabel": "1.4",
