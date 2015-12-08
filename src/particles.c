@@ -204,7 +204,7 @@ static void window_unload(Window *window) {
 }
 
 static void init(void) {
-  autoconfig_init();
+  autoconfig_init(300,100);
   app_message_register_inbox_received(in_received_handler);
 
   max_anim_count = MAX_ANIM_COUNT;
