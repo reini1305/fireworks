@@ -1,5 +1,6 @@
 #include <pebble.h>
 #include "autoconfig.h"
+#include "nightstand.h"
 
 static Layer *background_layer;
 static Window *window;
@@ -73,26 +74,28 @@ static void in_received_handler(DictionaryIterator *iter, void *context) {
 }
 
 static void handle_tick(struct tm *tick_time, TimeUnits units_changed) {
-  static char time_text[] = "00:00";
-  
-  char *time_format;
+  if(!nightstand_window_update()) {
+    static char time_text[] = "00:00";
+    
+    char *time_format;
 
-  if (clock_is_24h_style()) {
-    time_format = "%R";
-  } else {
-    time_format = "%I:%M";
+    if (clock_is_24h_style()) {
+      time_format = "%R";
+    } else {
+      time_format = "%I:%M";
+    }
+    
+    strftime(time_text, sizeof(time_text), time_format, tick_time);
+    
+    // Kludge to handle lack of non-padded hour format string
+    // for twelve hour clock.
+    if (!clock_is_24h_style() && (time_text[0] == '0')) {
+      memmove(time_text, &time_text[1], sizeof(time_text) - 1);
+    }
+    
+    text_layer_set_text(time_layer, time_text);
+    start_animation();
   }
-  
-  strftime(time_text, sizeof(time_text), time_format, tick_time);
-  
-  // Kludge to handle lack of non-padded hour format string
-  // for twelve hour clock.
-  if (!clock_is_24h_style() && (time_text[0] == '0')) {
-    memmove(time_text, &time_text[1], sizeof(time_text) - 1);
-  }
-  
-  text_layer_set_text(time_layer, time_text);
-  start_animation();
 }
 
 static void accel_tap_handler(AccelAxisType axis, int32_t direction) {
@@ -213,7 +216,7 @@ static void init(void) {
     .load = window_load,
     .unload = window_unload,
   });
-  
+  nightstand_window_init();
   
   // Push the window onto the stack
   const bool animated = true;
@@ -224,6 +227,7 @@ static void init(void) {
 static void deinit(void) {
   window_destroy(window);
   autoconfig_deinit();
+  nightstand_window_deinit();
 }
 
 
