@@ -1,7 +1,8 @@
 {
     "appKeys": {
         "minute": 0,
-        "bluetooth": 1
+        "bluetooth": 1,
+        "nightstand": 2
     },
     "capabilities": [
         "configurable"
@@ -40,6 +41,14 @@
               "off-text": "No",
               "on-text": "Yes",
               "default": true
+              },
+              {
+              "name": "nightstand",
+              "title": "Nightstand mode when on charger?",
+              "type": "boolean",
+              "off-text": "No",
+              "on-text": "Yes",
+              "default": true
               }
               ]
   },
@@ -52,7 +61,7 @@
 	"chalk"
     ],
     "uuid": "18e6b7be-aa5e-4495-afa7-b8ba2ce533c9",
-    "versionLabel": "1.7",
+    "versionLabel": "1.9",
     "watchapp": {
         "watchface": true
     }

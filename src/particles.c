@@ -74,7 +74,11 @@ static void in_received_handler(DictionaryIterator *iter, void *context) {
 }
 
 static void handle_tick(struct tm *tick_time, TimeUnits units_changed) {
-  if(!nightstand_window_update()) {
+  bool update_time = true;
+  if(getNightstand()) {
+    update_time = !nightstand_window_update();
+  }
+  if(update_time) {
     static char time_text[] = "00:00";
     
     char *time_format;
