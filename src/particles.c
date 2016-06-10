@@ -1,6 +1,5 @@
 #include <pebble.h>
-#include "autoconfig.h"
-#include "nightstand.h"
+#include <nightstand/nightstand.h>
 
 static Layer *background_layer;
 static Window *window;
@@ -15,6 +14,16 @@ bool bluetooth_connected;
 #define MAX_ANIM_COUNT 150
 static int max_anim_count;
 
+// Preferences
+#define KEY_SETTINGS 1
+typedef struct Settings{
+  bool firework_on_minute;
+  bool bluetooth_status;
+  bool nightstand_mode;
+} Settings;
+
+static Settings s_settings;
+
 typedef struct Particle {
   GPoint Pos; //Position of the particle
   GPoint PosHistory[NUM_HISTORY];
@@ -25,6 +34,17 @@ typedef struct Particle {
 
 static Particle particles[NUM_PARTICLES];
 static int16_t anim_count;
+
+
+static void loadSettings(void) {
+  if(persist_exists(KEY_SETTINGS)) {
+    persist_read_data(KEY_SETTINGS,&s_settings,sizeof(Settings));
+  } else {
+    s_settings.bluetooth_status=true;
+    s_settings.nightstand_mode=true;
+    s_settings.firework_on_minute=true;
+  }
+}
 
 static void initParticle(int i,GPoint center) {
   particles[i].Pos.x = rand()%20+center.x;
@@ -38,8 +58,9 @@ static void initParticle(int i,GPoint center) {
 }
 
 static void initParticles() {
-  center.x=rand()%144;
-  center.y=rand()%168;
+  GRect bounds = layer_get_bounds(window_get_root_layer(window));
+  center.x=rand()%bounds.size.w;
+  center.y=rand()%bounds.size.h;
   for(int i=0;i<NUM_PARTICLES;i++) {
     initParticle(i,center);
   }
@@ -51,7 +72,7 @@ static void animate(void *data){
   else
   {
     animation_is_running=false;
-    if(!getMinute())
+    if(!s_settings.firework_on_minute)
       max_anim_count=0;
   }
   layer_mark_dirty(background_layer);
@@ -67,15 +88,24 @@ static void start_animation() {
 }
 
 static void in_received_handler(DictionaryIterator *iter, void *context) {
-  autoconfig_in_received_handler(iter, context);
+  
+  Tuple *t = dict_find(iter, MESSAGE_KEY_minute);
+  if(t) {
+    s_settings.firework_on_minute = t->value->int32 == 1;
+  }
+  if((t = dict_find(iter, MESSAGE_KEY_bluetooth)))
+    s_settings.bluetooth_status = t->value->int32 == 1;
+  if((t = dict_find(iter, MESSAGE_KEY_nightstand)))
+    s_settings.nightstand_mode = t->value->int32 == 1;
+  
   if(!animation_is_running)
-    max_anim_count = getMinute()?MAX_ANIM_COUNT:0;
+    max_anim_count = s_settings.firework_on_minute?MAX_ANIM_COUNT:0;
   layer_mark_dirty(background_layer);
 }
 
 static void handle_tick(struct tm *tick_time, TimeUnits units_changed) {
   bool update_time = true;
-  if(getNightstand()) {
+  if(s_settings.nightstand_mode) {
     update_time = !nightstand_window_update();
   }
   if(update_time) {
@@ -113,7 +143,7 @@ static void accel_tap_handler(AccelAxisType axis, int32_t direction) {
 static void bluetooth_handler(bool connected) {
   bluetooth_connected = connected;
   start_animation();
-  if(!connected && getBluetooth())
+  if(!connected && s_settings.bluetooth_status)
     vibes_double_pulse();
 }
 
@@ -211,9 +241,9 @@ static void window_unload(Window *window) {
 }
 
 static void init(void) {
-  autoconfig_init(300,100);
+  app_message_open(300,100);
   app_message_register_inbox_received(in_received_handler);
-
+  loadSettings();
   max_anim_count = MAX_ANIM_COUNT;
   window = window_create();
   window_set_window_handlers(window, (WindowHandlers) {
@@ -230,7 +260,7 @@ static void init(void) {
 
 static void deinit(void) {
   window_destroy(window);
-  autoconfig_deinit();
+  persist_write_data(KEY_SETTINGS,&s_settings,sizeof(Settings));
   nightstand_window_deinit();
 }
 

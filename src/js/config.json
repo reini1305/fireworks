@@ -1,0 +1,44 @@
+[
+{
+  "type": "heading",
+  "id": "main-heading",
+  "defaultValue": "Fireworks Configuration",
+  "size": 1
+},
+{
+  "type": "text",
+  "defaultValue": "If you like what I'm doing, consider a donation: <a href='https://pledgie.com/campaigns/28156'><img alt='Click here to lend your support to: Christian Reinbachers Pebble Apps and make a donation at pledgie.com !' src='https://pledgie.com/campaigns/28156.png?skin_name=chrome' border='0' ></a>",
+  "id": "donationtext"
+},
+{
+  "type": "section",
+  "items": [
+            {
+            "type": "heading",
+            "defaultValue": "Settings"
+            },
+            {
+            "type": "toggle",
+            "appKey": "bluetooth",
+            "label": "Vibrate on disconnect",
+            "defaultValue": true
+            },
+            {
+            "type": "toggle",
+            "appKey": "minute",
+            "label": "Firework every minute",
+            "defaultValue": true
+            },
+            {
+            "type": "toggle",
+            "appKey": "nightstand",
+            "label": "Nightstand mode when on charger",
+            "defaultValue": true
+            }
+            ]
+},
+{
+  "type": "submit",
+  "defaultValue": "Save"
+}
+]
