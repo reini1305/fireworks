@@ -19,19 +19,19 @@
             },
             {
             "type": "toggle",
-            "appKey": "bluetooth",
+            "messageKey": "bluetooth",
             "label": "Vibrate on disconnect",
             "defaultValue": true
             },
             {
             "type": "toggle",
-            "appKey": "minute",
+            "messageKey": "minute",
             "label": "Firework every minute",
             "defaultValue": true
             },
             {
             "type": "toggle",
-            "appKey": "nightstand",
+            "messageKey": "nightstand",
             "label": "Nightstand mode when on charger",
             "defaultValue": true
             }

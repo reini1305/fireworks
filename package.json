@@ -2,7 +2,10 @@
   "version": "1.10.0",
   "author": "Christian Reinbacher",
   "private": true,
-  "dependencies": {"nightstand":"^1.0.1"},
+  "dependencies": {
+    "nightstand": "^1.0.3",
+    "pebble-clay": "^1.0.2"
+  },
   "keywords": [
     "pebble-app"
   ],
@@ -35,7 +38,8 @@
     "targetPlatforms": [
       "aplite",
       "basalt",
-      "chalk"
+      "chalk",
+      "diorite"
     ],
     "capabilities": [
       "configurable"
