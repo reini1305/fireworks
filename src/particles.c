@@ -148,12 +148,12 @@ static void bluetooth_handler(bool connected) {
 }
 
 static void background_update_proc(Layer *layer, GContext *ctx) {
-  GRect bounds = layer_get_bounds(layer);
+  GRect bounds = layer_get_unobstructed_bounds(layer);
   graphics_context_set_fill_color(ctx,GColorBlack);
   graphics_fill_rect(ctx,bounds,0,GCornerNone);
   graphics_context_set_stroke_color(ctx,GColorWhite);
 #ifdef PBL_COLOR
-  graphics_context_set_antialiased(ctx, false); // more performance
+  graphics_context_set_antialiased(ctx, true); // more performance
   if (bluetooth_connected) {
     if(anim_count<10)
     graphics_context_set_stroke_color(ctx,GColorRed);
