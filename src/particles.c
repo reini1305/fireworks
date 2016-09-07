@@ -35,6 +35,15 @@ typedef struct Particle {
 static Particle particles[NUM_PARTICLES];
 static int16_t anim_count;
 
+void unobstructed_change(AnimationProgress progress, void* data) {
+  GRect unobstructed_bounds = layer_get_unobstructed_bounds(window_get_root_layer(window));
+  GRect bounds = layer_get_bounds(window_get_root_layer(window));
+  int offset = (bounds.size.h-unobstructed_bounds.size.h)/2;
+  // update layer positions
+  bounds.origin.y+=(watch_info_get_model() == WATCH_INFO_MODEL_PEBBLE_STEEL) ? 60:48;
+  bounds.origin.y-=offset;
+  layer_set_frame(text_layer_get_layer(time_layer),bounds);
+}
 
 static void loadSettings(void) {
   if(persist_exists(KEY_SETTINGS)) {
@@ -88,7 +97,7 @@ static void start_animation() {
 }
 
 static void in_received_handler(DictionaryIterator *iter, void *context) {
-  
+
   Tuple *t = dict_find(iter, MESSAGE_KEY_minute);
   if(t) {
     s_settings.firework_on_minute = t->value->int32 == 1;
@@ -97,7 +106,7 @@ static void in_received_handler(DictionaryIterator *iter, void *context) {
     s_settings.bluetooth_status = t->value->int32 == 1;
   if((t = dict_find(iter, MESSAGE_KEY_nightstand)))
     s_settings.nightstand_mode = t->value->int32 == 1;
-  
+
   if(!animation_is_running)
     max_anim_count = s_settings.firework_on_minute?MAX_ANIM_COUNT:0;
   layer_mark_dirty(background_layer);
@@ -110,7 +119,7 @@ static void handle_tick(struct tm *tick_time, TimeUnits units_changed) {
   }
   if(update_time) {
     static char time_text[] = "00:00";
-    
+
     char *time_format;
 
     if (clock_is_24h_style()) {
@@ -118,15 +127,15 @@ static void handle_tick(struct tm *tick_time, TimeUnits units_changed) {
     } else {
       time_format = "%I:%M";
     }
-    
+
     strftime(time_text, sizeof(time_text), time_format, tick_time);
-    
+
     // Kludge to handle lack of non-padded hour format string
     // for twelve hour clock.
     if (!clock_is_24h_style() && (time_text[0] == '0')) {
       memmove(time_text, &time_text[1], sizeof(time_text) - 1);
     }
-    
+
     text_layer_set_text(time_layer, time_text);
     start_animation();
   }
@@ -179,7 +188,7 @@ static void background_update_proc(Layer *layer, GContext *ctx) {
     graphics_context_set_stroke_color(ctx,GColorPictonBlue);
   }
 #endif
-  
+
   for(int i=0;i<NUM_PARTICLES;i++) {
     if(particles[i].age<0)
       continue;
@@ -205,17 +214,20 @@ static void background_update_proc(Layer *layer, GContext *ctx) {
 
 static void window_load(Window *window) {
   Layer *window_layer = window_get_root_layer(window);
-  GRect bounds = layer_get_bounds(window_layer);
-  
+  GRect unobstructed_bounds = layer_get_unobstructed_bounds(window_get_root_layer(window));
+  GRect bounds = layer_get_bounds(window_get_root_layer(window));
+  int offset = (bounds.size.h-unobstructed_bounds.size.h)/2;
+
   // init background
   background_layer = layer_create(bounds);
   layer_set_update_proc(background_layer, background_update_proc);
   layer_add_child(window_layer, background_layer);
   srand(time(NULL));
-  
+
   // init time
-  
+
   bounds.origin.y+=(watch_info_get_model() == WATCH_INFO_MODEL_PEBBLE_STEEL) ? 60:48;
+  bounds.origin.y-=offset;
   time_layer = text_layer_create(bounds);
   text_layer_set_text_color(time_layer,GColorWhite);
   text_layer_set_background_color(time_layer,GColorClear);
@@ -223,13 +235,13 @@ static void window_load(Window *window) {
   text_layer_set_font(time_layer,fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_DIGITAL_62)));
   text_layer_set_text(time_layer,"00:00");
   layer_add_child(window_layer,text_layer_get_layer(time_layer));
-  
+
   // force update
   time_t now = time(NULL);
   struct tm *t = localtime(&now);
   handle_tick(t, MINUTE_UNIT);
   tick_timer_service_subscribe(MINUTE_UNIT, handle_tick);
-  
+
   accel_tap_service_subscribe(accel_tap_handler);
   bluetooth_connection_service_subscribe(bluetooth_handler);
   bluetooth_handler(bluetooth_connection_service_peek());
@@ -251,11 +263,16 @@ static void init(void) {
     .unload = window_unload,
   });
   nightstand_window_init();
-  
+  UnobstructedAreaHandlers handlers = {
+    // .will_change = unobstructed_will_change,
+    .change = unobstructed_change
+    // .did_change = unobstructed_did_change
+  };
+  unobstructed_area_service_subscribe(handlers, NULL);
   // Push the window onto the stack
   const bool animated = true;
   window_stack_push(window, animated);
-  
+
 }
 
 static void deinit(void) {
