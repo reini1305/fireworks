@@ -3,8 +3,8 @@
   "author": "Christian Reinbacher",
   "private": true,
   "dependencies": {
-    "nightstand": "^1.0.4",
-    "pebble-clay": "^1.0.2"
+    "nightstand": "^1.0.5",
+    "pebble-clay": "^1.0.3"
   },
   "keywords": [
     "pebble-app"
@@ -39,7 +39,8 @@
       "aplite",
       "basalt",
       "chalk",
-      "diorite"
+      "diorite",
+      "emery"
     ],
     "capabilities": [
       "configurable"

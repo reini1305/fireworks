@@ -227,6 +227,9 @@ static void window_load(Window *window) {
   // init time
 
   bounds.origin.y+=(watch_info_get_model() == WATCH_INFO_MODEL_PEBBLE_STEEL) ? 60:48;
+#ifdef PBL_PLATFORM_EMERY
+  bounds.origin.y+=30;
+#endif
   bounds.origin.y-=offset;
   time_layer = text_layer_create(bounds);
   text_layer_set_text_color(time_layer,GColorWhite);
